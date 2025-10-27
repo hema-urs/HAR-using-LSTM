@@ -22,16 +22,20 @@ def load_signals(folder, split='train'):
         data = np.loadtxt(path)
         signals.append(data)
     return np.transpose(np.array(signals), (1, 2, 0))
+    
 X_train = load_signals("UCI HAR Dataset/train", split='train')
 X_test = load_signals("UCI HAR Dataset/test", split='test')
+
 y_train = np.loadtxt("UCI HAR Dataset/train/y_train.txt")
 y_test = np.loadtxt("UCI HAR Dataset/test/y_test.txt")
 encoder = LabelEncoder()
+
 y_train_encoded = encoder.fit_transform(y_train)
 y_test_encoded = encoder.transform(y_test)
 
 y_train_cat = tf.keras.utils.to_categorical(y_train_encoded)
 y_test_cat = tf.keras.utils.to_categorical(y_test_encoded)
+
 model = Sequential([
     LSTM(64, input_shape=(X_train.shape[1], X_train.shape[2])),
     Dropout(0.5),
@@ -39,9 +43,11 @@ model = Sequential([
     Dropout(0.5),
     Dense(y_train_cat.shape[1], activation='softmax')
 ])
+
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 history = model.fit(X_train, y_train_cat, epochs=15, batch_size=64, validation_split=0.2)
 test_loss, test_acc = model.evaluate(X_test, y_test_cat)
+
 print(f"Test Accuracy: {test_acc:.4f}")
 plt.plot(history.history['accuracy'], label='train acc')
 plt.plot(history.history['val_accuracy'], label='val acc')
